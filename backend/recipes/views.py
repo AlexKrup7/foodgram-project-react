@@ -69,7 +69,7 @@ class RecipeViewSet(ModelViewSet):
     @action(methods=['POST'], detail=True,
             permission_classes=[IsAuthenticated])
     def shopping_cart(self, request, pk):
-        data = {'user': request.user.id, 'shopping_cart': pk}
+        data = {'user': request.user.id, 'recipe': pk}
         serializer = ShoppingCartSerializer(
             data=data, context={'request': request})
         serializer.is_valid(raise_exception=True)

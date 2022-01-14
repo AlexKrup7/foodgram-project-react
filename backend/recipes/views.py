@@ -47,43 +47,46 @@ class RecipeViewSet(ModelViewSet):
             return RecipeReadSerializer
         return RecipeSerializer
 
-    @action(methods=['POST'], detail=True,
-            permission_classes=[IsAuthenticated])
-    def favorite(self, request, pk):
+    @staticmethod
+    def post_method_for_actions(request, pk, serializers):
         data = {'user': request.user.id, 'recipe': pk}
-        serializer = FavoriteSerializer(
-            data=data, context={'request': request})
+        serializer = serializers(data=data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    @favorite.mapping.delete
-    def delete_favorite(self, request, pk):
-        user = request.user
-        recipe = get_object_or_404(Recipe, id=pk)
-        favorite = get_object_or_404(
-            Favorite, user=user, recipe=recipe)
-        favorite.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    @action(detail=True, permission_classes=[IsAuthenticated])
+    def favorite(self, request, pk):
+        return self.post_method_for_actions(
+            request=request, pk=pk, serializers=FavoriteSerializer
+        )
 
-    @action(methods=['POST'], detail=True,
-            permission_classes=[IsAuthenticated])
+    @action(detail=True, permission_classes=[IsAuthenticated])
     def shopping_cart(self, request, pk):
-        data = {'user': request.user.id, 'shopping_cart': pk}
-        serializer = ShoppingCartSerializer(
-            data=data, context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return self.post_method_for_actions(
+            request=request, pk=pk, serializers=ShoppingCartSerializer
+        )
 
-    @shopping_cart.mapping.delete
-    def delete_shopping_cart(self, request, pk):
+    @staticmethod
+    def delete_method_for_actions(request, pk, model_name):
         user = request.user
         recipe = get_object_or_404(Recipe, id=pk)
-        shopping_cart = get_object_or_404(
-            ShoppingCart, user=user, recipe=recipe)
-        shopping_cart.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        model_names = get_object_or_404(
+            model_name, user=user, recipe=recipe)
+        model_names.delete()
+        return Response(model_names.data, status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, permission_classes=[IsAuthenticated])
+    def delete_favorite(self, request, pk):
+        return self.delete_method_for_actions(
+            request=request, pk=pk, model_name=Favorite
+        )
+
+    @action(detail=True, permission_classes=[IsAuthenticated])
+    def delete_shopping_cart(self, request, pk):
+        return self.delete_method_for_actions(
+            request=request, pk=pk, model_name=ShoppingCart
+        )
 
     @action(detail=False, permission_classes=[IsAuthenticated])
     def download_shopping_cart(self, request):

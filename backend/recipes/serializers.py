@@ -1,8 +1,14 @@
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 
-from recipes.models import Tag, Ingredient, Favorite, ShoppingCart, Recipe, \
+from recipes.models import (
+    Tag,
+    Ingredient,
+    Favorite,
+    ShoppingCart,
+    Recipe,
     CountOfIngredient
+)
 from users.serializers import CustomUserSerializer
 
 
@@ -102,19 +108,11 @@ class RecipeSerializer(serializers.ModelSerializer):
         return recipe
 
     def update(self, instance, validated_data):
-        instance.image = validated_data.get('image', instance.image)
-        instance.name = validated_data.get('name', instance.name)
-        instance.text = validated_data.get('text', instance.text)
-        instance.cooking_time = validated_data.get(
-            'cooking_time', instance.cooking_time)
         instance.tags.clear()
-        tags = validated_data.get('tags')
-        self.create_tags(tags, instance)
-        CountOfIngredient.objects.filter(recipe=instance).all().delete()
-        ingredients = validated_data.get('ingredients')
-        self.create_ingredients(ingredients, instance)
-        instance.save()
-        return instance
+        CountOfIngredient.objects.filter(recipe=instance).delete()
+        self.create_tags(validated_data.pop('tags'), instance)
+        self.create_ingredients(validated_data.pop('ingredients'), instance)
+        return super().update(instance, validated_data)
 
     def to_representation(self, instance):
         request = self.context.get('request')

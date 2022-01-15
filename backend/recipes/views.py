@@ -8,17 +8,10 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 from .filters import IngredientSearchFilter, RecipeFilter
-
 from .models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
-
-from .serializers import (
-    FavoriteSerializer,
-    IngredientSerializer,
-    RecipeReadSerializer,
-    RecipeSerializer,
-    ShoppingCartSerializer,
-    TagSerializer
-)
+from .serializers import (FavoriteSerializer, IngredientSerializer,
+                          RecipeReadSerializer, RecipeSerializer,
+                          ShoppingCartSerializer, TagSerializer)
 
 from backend.pagination import LimitPageNumberPagination
 from backend.permissions import IsAuthorOrAdminOrReadOnly

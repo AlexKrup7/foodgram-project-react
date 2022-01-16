@@ -1,3 +1,4 @@
+from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework.backends import DjangoFilterBackend
@@ -9,30 +10,27 @@ from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 from backend.pagination import LimitPageNumberPagination
 from backend.permissions import IsAuthorOrAdminOrReadOnly
+
 from .filters import IngredientSearchFilter, RecipeFilter
-from .models import Favorite, Ingredient, Recipe, Tag, ShoppingCart
-from .serializers import (
-    IngredientSerializer,
-    RecipeReadSerializer,
-    RecipeSerializer,
-    TagSerializer,
-    FavoriteSerializer,
-    ShoppingCartSerializer
-)
+from .models import (CountOfIngredient, Favorite, Ingredient, Recipe,
+                     ShoppingCart, Tag)
+from .serializers import (FavoriteSerializer, IngredientSerializer,
+                          RecipeReadSerializer, RecipeSerializer,
+                          ShoppingCartSerializer, TagSerializer)
 
 
 class TagViewSet(ReadOnlyModelViewSet):
     serializer_class = TagSerializer
     queryset = Tag.objects.all()
-    permission_classes = AllowAny
+    permission_classes = (AllowAny,)
 
 
 class IngredientViewSet(ReadOnlyModelViewSet):
     serializer_class = IngredientSerializer
     filter_backends = (IngredientSearchFilter,)
     queryset = Ingredient.objects.all()
-    permission_classes = AllowAny
-    search_fields = ('^name')
+    permission_classes = (AllowAny,)
+    search_fields = ('^name',)
 
 
 class RecipeViewSet(ModelViewSet):
@@ -55,12 +53,14 @@ class RecipeViewSet(ModelViewSet):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    @action(detail=True, permission_classes=[IsAuthenticated])
+    @action(methods=['POST'], detail=True,
+            permission_classes=[IsAuthenticated])
     def favorite(self, request, pk):
         return self.post_method_for_action(request=request, pk=pk,
                                            serializers=FavoriteSerializer)
 
-    @action(detail=True, permission_classes=[IsAuthenticated])
+    @action(methods=['POST'], detail=True,
+            permission_classes=[IsAuthenticated])
     def shopping_cart(self, request, pk):
         return self.post_method_for_action(request=request, pk=pk,
                                            serializers=ShoppingCartSerializer)
@@ -87,10 +87,10 @@ class RecipeViewSet(ModelViewSet):
 
     @action(detail=False, permission_classes=[IsAuthenticated])
     def download_shopping_cart(self, request):
-        ingredients = Ingredient.objects.filter(
-            recipe__purchases__user=request.user).values(
+        ingredients = CountOfIngredient.objects.filter(
+            recipe__shopping_cart__user=request.user).values(
             'ingredient__name',
-            'ingredient__measurement_unit').annotate(total=sum('amount'))
+            'ingredient__measurement_unit').annotate(total=Sum('amount'))
         shopping_list = 'список:\n'
         for number, ingredient in enumerate(ingredients, start=1):
             shopping_list += (

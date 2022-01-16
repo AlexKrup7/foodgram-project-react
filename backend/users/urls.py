@@ -1,6 +1,6 @@
 from django.urls import include, path
 
-from .views import FollowView, FollowListView
+from .views import FollowListView, FollowView
 
 urlpatterns = [
     path('users/<int:id>/subscribe/', FollowView.as_view(), name='subscribe'),

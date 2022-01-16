@@ -5,8 +5,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from backend.pagination import LimitPageNumberPagination
+
 from .models import Subscribe, User
-from .serializers import SubscriptionSerializer, SubscriptionListSerializer
+from .serializers import SubscriptionListSerializer, SubscriptionSerializer
 
 
 class FollowView(APIView):

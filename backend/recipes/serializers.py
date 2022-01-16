@@ -1,14 +1,8 @@
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 
-from recipes.models import (
-    Tag,
-    Ingredient,
-    Favorite,
-    ShoppingCart,
-    Recipe,
-    CountOfIngredient
-)
+from recipes.models import (CountOfIngredient, Favorite, Ingredient, Recipe,
+                            ShoppingCart, Tag)
 from users.serializers import CustomUserSerializer
 
 
@@ -130,7 +124,7 @@ class RepresentationSerializer(serializers.ModelSerializer):
 class FavoriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Favorite
-        fields = ('user', 'recipes')
+        fields = ('user', 'recipe')
 
     def to_representation(self, instance):
         request = self.context.get('request')

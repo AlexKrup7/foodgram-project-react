@@ -8,6 +8,8 @@ services:
     env_file:
       - ./.env
   backend:
+#    build:
+#      context: ../backend
     image: alexkrup7/foodgram_backend
     restart: always
     volumes:

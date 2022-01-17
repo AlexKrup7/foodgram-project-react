@@ -114,6 +114,12 @@ class RecipeSerializer(serializers.ModelSerializer):
         return RecipeReadSerializer(
             instance, context=context).data
 
+    def validate(self, data):
+        ingredients = data['ingredients']
+        if len(ingredients) != len(set(ingredients)):
+            raise serializers.ValidationError(
+                'Ингредиенты не должны повторяться')
+
 
 class RepresentationSerializer(serializers.ModelSerializer):
     class Meta:
